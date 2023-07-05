@@ -4,7 +4,7 @@ This small tool operates on wordlists to find "domain hacks", words where the la
 
 For example, when searching for ".rs" domain hacks, we would find things such as "refrigerato.rs".
 
-It queries Cloudflare's DNS server for each combination and filters out every domain that is already registered. It then spits out a simple text file with each line containing a domain that is still available.
+By default, it queries Cloudflare's, Google's, and Quad9's DNS servers for each combination and filters out every one that is already registered. It then spits out a simple text file with each line containing a domain that is still available.
 
 To change the TLD to search, simply change line 11 in [src/main.rs](src/main.rs).
 
