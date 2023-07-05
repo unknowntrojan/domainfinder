@@ -127,42 +127,6 @@ async fn main() {
     funny_domains.dedup();
     funny_domains.sort();
 
-    // let mut funny_domains = Vec::new();
-
-    // for domain in &domains {
-    //     bar.inc(1);
-    //     let mut buf = vec![0u8; 32768];
-    //     match client
-    //         .query_raw(
-    //             domain,
-    //             rsdns::constants::Type::A,
-    //             rsdns::constants::Class::In,
-    //             &mut buf,
-    //         )
-    //         .await
-    //     {
-    //         Ok(len) => {
-    //             let iter =
-    //                 MessageIterator::new(&buf[0..len]).expect("unable to create iterator. cringe");
-    //             // log::info!(
-    //             //     "{domain}: Header: {:#?} Questions: {:#?} Records: {:#?}",
-    //             //     iter.header(),
-    //             //     iter.questions().collect::<Vec<_>>(),
-    //             //     iter.records().collect::<Vec<_>>()
-    //             // );
-
-    //             if iter.header().flags.response_code() == 3 {
-    //                 // NXDOMAIN! YAY!
-    //                 log::info!("domain {domain} is not yet registered or has no records.");
-    //                 funny_domains.push(domain.clone());
-    //             }
-    //         }
-    //         Err(err) => {
-    //             log::error!("error occurred querying {domain}: {err:?}");
-    //             continue;
-    //         }
-    //     }
-    // }
-
-    // std::fs::write("funny.domains", funny_domains.join("\n")).expect("unable to write domain list");
+    std::fs::write(&format!("{TLD}.domains"), funny_domains.join("\n"))
+        .expect("unable to write domain list");
 }
