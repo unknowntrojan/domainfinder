@@ -47,7 +47,7 @@ async fn main() {
         files.values().map(|file| file.len()).sum::<usize>()
     );
 
-    let domains: Vec<String> = files
+    let mut domains: Vec<String> = files
         .into_values()
         .flat_map(|file| {
             file.into_iter()
@@ -60,6 +60,9 @@ async fn main() {
         })
         .collect();
 
+    domains.sort();
+    domains.dedup();
+
     let bar = Arc::new(
         ProgressBar::new(domains.len() as u64).with_style(
             ProgressStyle::default_bar()
@@ -70,12 +73,14 @@ async fn main() {
 
     let mut funny_domains = Vec::new();
 
-    let client = Arc::new(DNSClient::new(vec![UpstreamServer::new(SocketAddr::new(
-        IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)),
-        53,
-    ))]));
+    let client = Arc::new(DNSClient::new(vec![
+        UpstreamServer::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)), 53)),
+        UpstreamServer::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)), 53)),
+        UpstreamServer::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(8, 8, 4, 4)), 53)),
+        UpstreamServer::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(9, 9, 9, 9)), 53)),
+    ]));
 
-    for chunk in domains.chunks(100) {
+    for chunk in domains.chunks(50) {
         let tasks = chunk.iter().map(|domain| {
             let domain = domain.clone();
             let bar = bar.clone();
@@ -96,7 +101,7 @@ async fn main() {
                     }
                     Err(e) => {
                         bar.inc(1);
-                        log::error!("error querying addresses: {e:?}");
+                        log::error!("error querying domain {domain}: {e:?}");
                         None
                     }
                 }
