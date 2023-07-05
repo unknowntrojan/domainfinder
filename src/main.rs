@@ -106,7 +106,8 @@ async fn main() {
                     }
                     Err(e) => {
                         bar.inc(1);
-                        log::error!("error querying domain {domain}: {e:?}");
+                        bar.println(&format!("error querying domain {domain}: {e:?}"));
+                        // log::error!("error querying domain {domain}: {e:?}");
                         None
                     }
                 }
