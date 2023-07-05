@@ -7,6 +7,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
 };
+use tokio::io::AsyncWriteExt;
 
 const TLD: &str = "rs";
 
@@ -80,6 +81,10 @@ async fn main() {
         UpstreamServer::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(9, 9, 9, 9)), 53)),
     ]));
 
+    let mut out_file = tokio::fs::File::create(&format!("{TLD}.domains"))
+        .await
+        .expect("unable to open domain file for writing");
+
     for chunk in domains.chunks(50) {
         let tasks = chunk.iter().map(|domain| {
             let domain = domain.clone();
@@ -108,25 +113,28 @@ async fn main() {
             })
         });
 
-        futures::future::join_all(tasks)
-            .await
-            .into_iter()
-            .for_each(|domain| match domain {
+        for domain in futures::future::join_all(tasks).await {
+            match domain {
                 Ok(Some(domain)) => {
+                    out_file
+                        .write_all(format!("{domain}\n").as_bytes())
+                        .await
+                        .expect("unable to write domain to file");
                     funny_domains.push(domain);
                 }
                 Err(e) => {
                     log::error!("error awaiting task: {e:?}");
                 }
                 _ => {}
-            });
+            }
+        }
     }
 
     bar.finish();
 
-    funny_domains.dedup();
-    funny_domains.sort();
+    // funny_domains.dedup();
+    // funny_domains.sort();
 
-    std::fs::write(&format!("{TLD}.domains"), funny_domains.join("\n"))
-        .expect("unable to write domain list");
+    // std::fs::write(&format!("{TLD}.domains"), funny_domains.join("\n"))
+    //     .expect("unable to write domain list");
 }
