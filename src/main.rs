@@ -53,7 +53,7 @@ async fn main() {
         .flat_map(|file| {
             file.into_iter()
                 .map(|result| {
-                    let mut str = result[..result.len() - 2].to_owned();
+                    let mut str = result[..result.len() - TLD.len()].to_owned();
                     str.push_str(&format!(".{TLD}"));
                     str
                 })
